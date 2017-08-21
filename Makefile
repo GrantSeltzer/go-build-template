@@ -16,7 +16,7 @@
 BIN := myapp
 
 # This repo's root import path (under GOPATH).
-PKG := github.com/thockin/go-build-template
+PKG := github.com/capsule8/capsulator_template 
 
 # Where to push the docker image.
 REGISTRY ?= thockin
@@ -139,6 +139,34 @@ test: build-dirs
 	    $(BUILD_IMAGE)                                                     \
 	    /bin/sh -c "                                                       \
 	        ./build/test.sh $(SRC_DIRS)                                    \
+	    "
+
+coverage-report: build-dirs
+	@docker run                                                            \
+	    -ti                                                                \
+	    -u $$(id -u):$$(id -g)                                             \
+	    -v $$(pwd)/.go:/go                                                 \
+	    -v $$(pwd):/go/src/$(PKG)                                          \
+	    -v $$(pwd)/bin/$(ARCH):/go/bin                                     \
+	    -v $$(pwd)/.go/std/$(ARCH):/usr/local/go/pkg/linux_$(ARCH)_static  \
+	    -w /go/src/$(PKG)                                                  \
+	    $(BUILD_IMAGE)                                                     \
+	    /bin/sh -c "                                                       \
+	        ./build/coverage.sh report $(SRC_DIRS)                         \
+	    "
+
+coverage-summary: build-dirs
+	@docker run                                                            \
+	    -ti                                                                \
+	    -u $$(id -u):$$(id -g)                                             \
+	    -v $$(pwd)/.go:/go                                                 \
+	    -v $$(pwd):/go/src/$(PKG)                                          \
+	    -v $$(pwd)/bin/$(ARCH):/go/bin                                     \
+	    -v $$(pwd)/.go/std/$(ARCH):/usr/local/go/pkg/linux_$(ARCH)_static  \
+	    -w /go/src/$(PKG)                                                  \
+	    $(BUILD_IMAGE)                                                     \
+	    /bin/sh -c "                                                       \
+	        ./build/coverage.sh summary $(SRC_DIRS)                        \
 	    "
 
 build-dirs:
